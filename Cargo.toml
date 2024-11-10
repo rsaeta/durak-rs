@@ -1,0 +1,17 @@
+[package]
+name = "durak_rt"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "durak_rt"
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+queues = "1.0.2"
+rand = "0.8.5"
+rayon = "1.9.0"
+pyo3 = "0.20.0"
+rand_chacha = "0.3.1"
+numpy = "0.20.0"
