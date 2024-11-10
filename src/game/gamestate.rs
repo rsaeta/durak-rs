@@ -1,4 +1,5 @@
 use core::fmt;
+use std::ops;
 
 use numpy::ndarray::{concatenate, Array1, Axis};
 
@@ -28,6 +29,14 @@ impl GamePlayer {
             GamePlayer::Player1 => GamePlayer::Player2,
             GamePlayer::Player2 => GamePlayer::Player1,
         }
+    }
+}
+
+impl ops::Not for GamePlayer {
+    type Output = GamePlayer;
+
+    fn not(self) -> Self::Output {
+        self.other()
     }
 }
 

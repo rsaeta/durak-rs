@@ -13,22 +13,33 @@ pub struct Game {
 }
 
 fn det_first_attacker(hand1: &Hand, hand2: &Hand, suit: Suit) -> GamePlayer {
-    let mut min1 = 15;
-    let mut min2 = 15;
-    for card in hand1.0.iter() {
-        if card.suit == suit && card.rank < min1 {
-            min1 = card.rank;
-        }
-    }
-    for card in hand2.0.iter() {
-        if card.suit == suit && card.rank < min2 {
-            min2 = card.rank;
-        }
-    }
-    if min1 < min2 {
-        GamePlayer::Player1
-    } else {
-        GamePlayer::Player2
+    let min1c = hand1
+        .0
+        .iter()
+        .filter(|x| x.suit == suit)
+        .min_by_key(|x| x.rank);
+    let min2c = hand2
+        .0
+        .iter()
+        .filter(|x| x.suit == suit)
+        .min_by_key(|x| x.rank);
+    match (min1c, min2c) {
+        (
+            Some(&Card {
+                suit: _,
+                rank: rank1,
+            }),
+            Some(&Card {
+                suit: _,
+                rank: rank2,
+            }),
+        ) => match rank1 < rank2 {
+            true => GamePlayer::Player1,
+            false => GamePlayer::Player2,
+        },
+        (Some(_), None) => GamePlayer::Player1,
+        (None, Some(_)) => GamePlayer::Player2,
+        (None, None) => GamePlayer::Player1,
     }
 }
 
@@ -47,7 +58,7 @@ impl Game {
             hand1,
             hand2,
             first_attacker,
-            first_attacker.other(),
+            !first_attacker,
             visible_card,
             false,
             Vec::new(),
