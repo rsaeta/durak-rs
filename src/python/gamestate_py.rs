@@ -4,13 +4,18 @@ use pyo3::exceptions::PyException;
 use pyo3::{pyclass, pymethods, PyErr, PyResult, Python};
 
 use crate::game::cards::Card;
-use crate::game::gamestate::{GamePlayer, ObservableGameState};
+use crate::game::gamestate::{GamePlayer, GameState, ObservableGameState};
 
 use super::card_py::CardPy;
 
 #[pyclass(name = "ObservableGameState")]
 pub struct ObservableGameStatePy {
     pub game_state: ObservableGameState,
+}
+
+#[pyclass(name = "GameState")]
+pub struct GameStatePy {
+    pub game_state: GameState,
 }
 
 #[pyclass(name = "GamePlayer")]
@@ -117,5 +122,22 @@ impl ObservableGameStatePy {
             })),
             Err(s) => Err(PyErr::new::<PyException, _>(s))
         }
+    }
+}
+
+#[pymethods]
+impl GameStatePy {
+    pub fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("GameState: {:?}", self.game_state))
+    }
+
+    pub fn __str__(&self) -> PyResult<String> {
+        Ok(format!("GameState: {:?}", self.game_state))
+    }
+
+    pub fn to_numpy(&self) -> PyResult<pyo3::Py<PyArray<u8, Ix1>>> {
+        Ok(Python::with_gil(|py| {
+            PyArray1::from_array(py, &self.game_state.to_numpy()).to_owned()
+        }))
     }
 }

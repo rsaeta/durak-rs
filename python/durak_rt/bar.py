@@ -24,6 +24,10 @@ def main():
     print(f"Player 1 reward: {rewards[0]}")
     print(f"Player 2 reward: {rewards[1]}")
 
+    env.save_game("game.json")
+    breakpoint()
+    env2 = GameEnv.from_file("game.json")
+
 
 if __name__ == "__main__":
     main()

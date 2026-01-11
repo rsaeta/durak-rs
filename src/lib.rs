@@ -6,6 +6,7 @@ use python::{
 
 mod game;
 mod python;
+mod rl;
 
 #[pymodule]
 #[pyo3(name = "rust")]

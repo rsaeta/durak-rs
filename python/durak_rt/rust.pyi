@@ -3,6 +3,7 @@ This file is a wrapper around the raw output from py03 to add type hints
 and whatnot to the classes
 """
 
+from os import PathLike
 from typing import List, Tuple
 import numpy as np
 
@@ -70,7 +71,6 @@ class ObservableGameState:
         ...
 
 class ActionList:
-
     @property
     def actions(self) -> List[str]:
         """Returns the actions as a list of strings"""
@@ -121,13 +121,14 @@ class GamePlayer:
         ...
 
 class GameEnv:
-    
-    def __init__(self, player: GamePlayer): 
+    @classmethod
+    def from_file(cls, file_path: PathLike) -> GameEnv: ...
+    def __init__(self, player: GamePlayer):
         """Play against a random player"""
         ...
 
     def play(self) -> Tuple[float, float]: ...
-
+    def save_game(self, file_path: PathLike) -> None: ...
     @staticmethod
     def state_shape() -> np._AnyShapeT:
         """Returns the shape of the game state as a numpy array"""

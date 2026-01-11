@@ -2,10 +2,11 @@ use core::fmt;
 
 use numpy::ndarray::Array1;
 use rand::seq::SliceRandom;
+use serde::{Deserialize, Serialize};
 
-use super::utils::indices_to_bitmap;
+use super::utils::{indices_to_bitmap, indices_to_bitmap_as_array1};
 
-#[derive(Clone, Copy, PartialEq, Debug, Eq, Ord, PartialOrd)]
+#[derive(Clone, Copy, PartialEq, Debug, Eq, Ord, PartialOrd, Serialize, Deserialize)]
 pub enum Suit {
     Spades,
     Hearts,
@@ -36,22 +37,28 @@ impl From<u8> for Suit {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Ord, PartialOrd)]
+#[derive(Clone, Copy, PartialEq, Eq, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Card {
     pub suit: Suit,
     pub rank: u8,
 }
 
-impl From<Card> for u8 {
+impl From<Card> for usize {
     fn from(value: Card) -> Self {
-        (u8::from(value.suit) * 9) + value.rank - 6
+        usize::from(u8::from(value.suit) * 9 + value.rank - 6)
     }
 }
 
-impl From<u8> for Card {
-    fn from(value: u8) -> Self {
+impl From<Card> for u8 {
+    fn from(value: Card) -> Self {
+        usize::from(value) as u8
+    }
+}
+
+impl From<usize> for Card {
+    fn from(value: usize) -> Self {
         let suit = Suit::from((value / 9) as u8);
-        let rank = (value % 9) + 6;
+        let rank = ((value % 9) + 6) as u8;
         Card { suit, rank }
     }
 }
@@ -76,7 +83,7 @@ impl fmt::Debug for Card {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Hand(pub Vec<Card>);
 
 impl PartialEq for Hand {
@@ -103,7 +110,13 @@ impl Into<Vec<u8>> for Hand {
 
 impl Into<Array1<u8>> for Hand {
     fn into(self) -> Array1<u8> {
-        Array1::from_vec(self.into())
+        indices_to_bitmap_as_array1(
+            self.0
+                .iter()
+                .map(|card| <Card as Into<usize>>::into(<Card as Clone>::clone(&*card)))
+                .collect(),
+            36,
+        )
     }
 }
 
@@ -116,9 +129,10 @@ impl fmt::Debug for Hand {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct Deck {
-    cards: Vec<Card>,
+    pub cards: Vec<Card>,
+    num_total_cards: usize,
 }
 
 impl fmt::Debug for Deck {
@@ -138,7 +152,10 @@ impl Deck {
                 });
             }
         }
-        Deck { cards }
+        Deck {
+            num_total_cards: cards.len(),
+            cards,
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -170,15 +187,24 @@ impl Deck {
     }
 }
 
-// This preserves order for the deck state
+// This does not preserve order for the deck state, but it is useful for the numpy array
 impl Into<Vec<u8>> for Deck {
     fn into(self) -> Vec<u8> {
-        self.cards.iter().map(|card| (*card).into()).collect()
+        indices_to_bitmap(
+            self.cards.iter().map(|card| (*card).into()).collect(),
+            self.num_total_cards,
+        )
     }
 }
 
 impl Into<Array1<u8>> for Deck {
     fn into(self) -> Array1<u8> {
-        Array1::from_vec(self.into())
+        indices_to_bitmap_as_array1(
+            self.cards
+                .iter()
+                .map(|card| <Card as Into<usize>>::into(<Card as Clone>::clone(&*card)))
+                .collect(),
+            self.num_total_cards,
+        )
     }
 }
