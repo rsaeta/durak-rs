@@ -1,4 +1,4 @@
-use numpy::ndarray::Array1;
+use ndarray::Array1;
 
 pub fn indices_to_bitmap(indices: Vec<usize>, total_size: usize) -> Vec<u8> {
     let mut bitmap = vec![0; total_size];

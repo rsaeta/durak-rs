@@ -1,6 +1,6 @@
 use core::fmt;
 
-use numpy::ndarray::Array1;
+use ndarray::Array1;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 

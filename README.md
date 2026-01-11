@@ -216,6 +216,33 @@ durak-rs/
 └── pyproject.toml
 ```
 
+## Web Server & Web App
+
+The project includes a web server and web application for playing Durak in a browser.
+
+### Running the Server
+
+```bash
+# Build and run the server
+cargo run --bin server
+
+# The server will start on http://localhost:3000
+```
+
+### Using the Web App
+
+1. Start the server (see above)
+2. Open your browser and navigate to `http://localhost:3000`
+3. Click "New Game" to create a game session
+4. Use the available action buttons to make moves
+5. The game state updates automatically
+
+The web app provides:
+- Visual card display with suit colors
+- Real-time game state updates
+- Legal action buttons
+- Game status indicators
+
 ## Development
 
 ### Building

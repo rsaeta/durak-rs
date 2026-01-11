@@ -5,7 +5,7 @@ use super::{
     cards::{Card, Deck, Hand},
     utils::indices_to_bitmap_as_array1,
 };
-use numpy::ndarray::{concatenate, Array1, Axis};
+use ndarray::{concatenate, Array1, Axis};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Copy, Debug, Serialize, Deserialize)]
@@ -62,7 +62,7 @@ impl ObservableGameState {
         let deck_size_arr = Array1::from_vec(vec![self.num_cards_in_deck]);
         let cards_in_opp_arr = Array1::from_vec(vec![self.cards_in_opponent]);
         let cat = concatenate(
-            numpy::ndarray::Axis(0),
+            ndarray::Axis(0),
             &[
                 player_acting_arr.view(),
                 hand_arr.view(),
@@ -164,7 +164,7 @@ impl GameState {
         ); // 36 bits
            // we expect a shape of 257 bits
         let cat = concatenate(
-            numpy::ndarray::Axis(0),
+            ndarray::Axis(0),
             &[
                 deck_arr.view(),
                 attack_table_arr.view(),
