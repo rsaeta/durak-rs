@@ -57,17 +57,29 @@ impl Player for PlayerPy {
             })
             .collect();
 
-        let res = Python::with_gil(|py| {
+        let res = Python::with_gil(|py| -> u8 {
             let history_list = PyList::empty(py);
             for item in history_py {
-                history_list.append(item.into_py(py)).unwrap();
+                history_list
+                    .append(item.into_py(py))
+                    .expect("Failed to append history item to list");
             }
             let player_any: &PyAny = self.0.as_ref(py);
-            let action = player_any
+            let action_result = player_any
                 .call_method1("choose_action", (state_py, actions_py, history_list))
-                .unwrap();
-            action.extract::<u8>().unwrap()
+                .expect("Failed to call choose_action on Python player");
+            action_result
+                .extract::<u8>()
+                .expect("choose_action did not return a valid action index")
         });
+
+        if res as usize >= actions.0.len() {
+            panic!(
+                "Python player returned invalid action index {} (max: {})",
+                res,
+                actions.0.len() - 1
+            );
+        }
         actions.0[res as usize]
     }
 }

@@ -23,8 +23,9 @@ pub struct ActionListPy(pub ActionList);
 
 #[pymethods]
 impl ActionListPy {
+    /// Get the list of available actions as strings.
     #[getter]
-    pub fn get_actions(&self) -> PyResult<Vec<String>> {
+    pub fn actions(&self) -> PyResult<Vec<String>> {
         Ok(self.0.to_strings())
     }
 
