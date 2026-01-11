@@ -1,0 +1,3 @@
+-e git+ssh://git@github.com/rsaeta/durak-rs.git@78508df45ef9e777e5df4e6a3fdc73c8252e4b84#egg=durak_rt
+maturin==1.11.5
+numpy==2.4.1
