@@ -1,4 +1,11 @@
-use std::{collections::HashSet, vec};
+use serde_json::to_writer_pretty;
+use std::{
+    collections::HashSet,
+    fs::File,
+    io::{BufReader, BufWriter},
+    path::PathBuf,
+    vec,
+};
 
 use super::{
     actions::{Action, ActionList},
@@ -44,7 +51,7 @@ fn det_first_attacker(hand1: &Hand, hand2: &Hand, suit: Suit) -> GamePlayer {
 }
 
 impl Game {
-    pub fn new() -> Game {
+    pub fn new() -> Self {
         let mut deck = Deck::new(6);
         deck.shuffle();
         let hand1 = Hand(deck.draw_n(6));
@@ -64,9 +71,23 @@ impl Game {
             Vec::new(),
         );
 
-        Game {
+        let history = vec![game_state.clone()];
+
+        Self {
             game_state,
-            history: Vec::new(),
+            history,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn from_file(file_path: &PathBuf) -> Self {
+        let file = File::open(file_path).unwrap();
+        let reader = BufReader::new(file);
+        let history: Vec<GameState> = serde_json::from_reader(reader).unwrap();
+        let game_state = history.last().unwrap().clone();
+        Self {
+            game_state,
+            history,
         }
     }
 
@@ -327,6 +348,13 @@ impl Game {
     }
 
     #[allow(dead_code)]
+    pub fn save_game(&self, file_path: &PathBuf) {
+        let file = File::create(file_path).unwrap();
+        let writer = BufWriter::new(file);
+        to_writer_pretty(writer, &self.history).unwrap();
+    }
+
+    #[allow(dead_code)]
     pub fn play(
         &mut self,
         mut player1: Box<dyn Player>,
@@ -366,8 +394,6 @@ pub trait GameLogic {
 
 impl GameLogic for Game {
     fn step(&mut self, action: Action) -> Result<(), &str> {
-        let current_state = self.game_state.clone();
-        self.history.push(current_state);
         let legal_actions = self.legal_actions();
         if !legal_actions.0.contains(&action) {
             return Err("Illegal action");
@@ -378,7 +404,7 @@ impl GameLogic for Game {
             Action::Attack(card) => self.handle_attack(card),
             Action::Defend(card) => self.handle_defense(card),
         }
-
+        self.history.push(self.game_state.clone());
         Ok(())
     }
 

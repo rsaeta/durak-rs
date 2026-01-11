@@ -1,23 +1,14 @@
 use core::fmt;
 use std::ops;
 
-use numpy::ndarray::{concatenate, Array1, Axis};
-
 use super::{
     cards::{Card, Deck, Hand},
     utils::indices_to_bitmap_as_array1,
 };
+use numpy::ndarray::{concatenate, Array1, Axis};
+use serde::{Deserialize, Serialize};
 
-macro_rules! pub_struct {
-  ($name:ident {$($field:ident: $t:ty,)*}) => {
-      #[derive(Clone, PartialEq)] // ewww
-      pub struct $name {
-          $(pub $field: $t),*
-      }
-  }
-}
-
-#[derive(Clone, PartialEq, Copy, Debug)]
+#[derive(Clone, PartialEq, Copy, Debug, Serialize, Deserialize)]
 pub enum GamePlayer {
     Player1,
     Player2,
@@ -91,18 +82,19 @@ impl ObservableGameState {
     }
 }
 
-pub_struct!(GameState {
-    deck: Deck,
-    attack_table: Vec<Card>,
-    defense_table: Vec<Card>,
-    hand1: Hand,
-    hand2: Hand,
-    acting_player: GamePlayer,
-    defending_player: GamePlayer,
-    visible_card: Card,
-    defender_has_taken: bool,
-    graveyard: Vec<Card>,
-});
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
+pub struct GameState {
+    pub deck: Deck,
+    pub attack_table: Vec<Card>,
+    pub defense_table: Vec<Card>,
+    pub hand1: Hand,
+    pub hand2: Hand,
+    pub acting_player: GamePlayer,
+    pub defending_player: GamePlayer,
+    pub visible_card: Card,
+    pub defender_has_taken: bool,
+    pub graveyard: Vec<Card>,
+}
 
 impl fmt::Debug for GameState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -152,20 +144,27 @@ impl GameState {
 
     #[allow(dead_code)]
     pub fn to_numpy(&self) -> Array1<u8> {
-        let deck_arr = <Deck as Into<Array1<u8>>>::into(self.deck.clone());
-        let attack_table_arr = <Hand as Into<Array1<u8>>>::into(Hand(self.attack_table.clone()));
-        let defense_table_arr = <Hand as Into<Array1<u8>>>::into(Hand(self.defense_table.clone()));
-        let hand1_arr = <Hand as Into<Array1<u8>>>::into(self.hand1.clone());
-        let hand2_arr = <Hand as Into<Array1<u8>>>::into(self.hand2.clone());
-        let acting_player_arr = indices_to_bitmap_as_array1(vec![self.acting_player as usize], 2);
+        let deck_arr = <Deck as Into<Array1<u8>>>::into(self.deck.clone()); // 36 bits
+        let attack_table_arr = <Hand as Into<Array1<u8>>>::into(Hand(self.attack_table.clone())); // 36 bits
+        let defense_table_arr = <Hand as Into<Array1<u8>>>::into(Hand(self.defense_table.clone())); // 36 bits
+        let hand1_arr = <Hand as Into<Array1<u8>>>::into(self.hand1.clone()); // 36 bits
+        let hand2_arr = <Hand as Into<Array1<u8>>>::into(self.hand2.clone()); // 36 bits
+        let acting_player_arr = indices_to_bitmap_as_array1(vec![self.acting_player as usize], 2); // 2 bits
         let defending_player_arr =
-            indices_to_bitmap_as_array1(vec![self.defending_player as usize], 2);
-        let visible_card_arr = Array1::from_vec(vec![self.visible_card.into()]);
-        let defender_has_taken_arr = Array1::from_vec(vec![self.defender_has_taken as u8]);
-        let graveyard_arr = <Hand as Into<Array1<u8>>>::into(Hand(self.graveyard.clone()));
-
-        concatenate(
-            Axis(0),
+            indices_to_bitmap_as_array1(vec![self.defending_player as usize], 2); // 2 bits
+        let visible_card_arr =
+            indices_to_bitmap_as_array1(vec![<Card as Into<usize>>::into(self.visible_card)], 36); // 36 bits
+        let defender_has_taken_arr = Array1::from_vec(vec![self.defender_has_taken as u8]); // 1 bit
+        let graveyard_arr = indices_to_bitmap_as_array1(
+            self.graveyard
+                .iter()
+                .map(|card| <Card as Into<usize>>::into(card.clone()))
+                .collect(),
+            36,
+        ); // 36 bits
+           // we expect a shape of 257 bits
+        let cat = concatenate(
+            numpy::ndarray::Axis(0),
             &[
                 deck_arr.view(),
                 attack_table_arr.view(),
@@ -178,8 +177,11 @@ impl GameState {
                 defender_has_taken_arr.view(),
                 graveyard_arr.view(),
             ],
-        )
-        .unwrap()
+        );
+        match cat {
+            Ok(a) => a as Array1<u8>,
+            Err(_e) => panic!("Shape Error"),
+        }
     }
 
     pub fn observe(&self, player: GamePlayer) -> ObservableGameState {

@@ -29,8 +29,8 @@ impl From<u8> for Action {
         match num {
             0 => Action::StopAttack,
             1 => Action::Take,
-            2..=37 => Action::Attack(Card::from(num - 2)),
-            38..=73 => Action::Defend(Card::from(num - 38)),
+            2..=37 => Action::Attack(Card::from((num - 2) as usize)),
+            38..=73 => Action::Defend(Card::from((num - 38) as usize)),
             _ => panic!("Invalid action number"),
         }
     }

@@ -1,10 +1,13 @@
+use std::path::PathBuf;
+
 use crate::game::actions::num_actions;
 use crate::game::game::{Game, GameLogic};
 use crate::game::gamestate::GamePlayer;
 use crate::game::player::{Player, RandomPlayer};
 use crate::python::player_py::PlayerPy;
 use pyo3::exceptions::{PyIndexError, PyValueError};
-use pyo3::{pyclass, pymethods, IntoPy, Py, PyResult, Python};
+use pyo3::types::PyType;
+use pyo3::{pyclass, pymethods, types::PyString, IntoPy, Py, PyResult, Python};
 use rand::{rngs::StdRng, SeedableRng};
 
 /// Python wrapper for the game environment.
@@ -22,6 +25,17 @@ pub struct GameEnvPy {
 
 #[pymethods]
 impl GameEnvPy {
+    #[classmethod]
+    pub fn from_file(_cls: Py<PyType>, file_path: Py<PyString>) -> PyResult<Self> {
+        let game = Game::from_file(&PathBuf::from(file_path.to_string()));
+        Ok(GameEnvPy {
+            game: Box::new(game),
+            player1: None,
+            player2: None,
+            random_player2: None,
+        })
+    }
+
     /// Create a new game environment.
     ///
     /// Args:
@@ -169,6 +183,13 @@ impl GameEnvPy {
         })
     }
 
+    // Get the actual game state
+    pub fn get_game_state(&self) -> super::gamestate_py::GameStatePy {
+        super::gamestate_py::GameStatePy {
+            game_state: self.game.game_state.clone(),
+        }
+    }
+
     /// Get the legal actions for the current state.
     ///
     /// Returns:
@@ -250,6 +271,12 @@ impl GameEnvPy {
             game_over = self.game.is_over();
         }
         Ok(self.game.get_rewards())
+    }
+
+    #[pyo3(signature = (file_path))]
+    pub fn save_game(&self, file_path: Py<PyString>) -> PyResult<()> {
+        self.game.save_game(&PathBuf::from(file_path.to_string()));
+        Ok(())
     }
 
     /// Get the number of possible actions in the game.
