@@ -67,7 +67,7 @@ impl ActionList {
             .enumerate()
             .filter_map(|(i, &b)| if b { Some(Action::from(i as u8)) } else { None })
             .collect();
-        ActionList(actions)
+        Self(actions)
     }
 }
 
