@@ -1,4 +1,5 @@
-use pyo3::{Py, PyAny, Python};
+use pyo3::{exceptions::PyNotImplementedError, types::PyList, Py, PyAny, Python};
+use pyo3::{pyclass, pymethods, IntoPy, PyErr, PyResult};
 
 use crate::{
     game::{
@@ -11,9 +12,36 @@ use crate::{
 
 use super::actions_py::ActionListPy;
 
-pub struct PyPlayer(pub Py<PyAny>);
+/// Base class for game players that can be subclassed in Python.
+/// Subclasses must implement the `choose_action` method.
+#[pyclass(name = "GamePlayer", subclass)]
+pub struct GamePlayerPy;
 
-impl Player for PyPlayer {
+#[pymethods]
+impl GamePlayerPy {
+    #[new]
+    fn new() -> Self {
+        Self
+    }
+
+    /// Choose an action given the current game state and available actions.
+    /// This method must be overridden by subclasses.
+    fn choose_action(
+        &self,
+        _state: &ObservableGameStatePy,
+        _actions: &ActionListPy,
+        _history: &PyList,
+    ) -> PyResult<u8> {
+        Err(PyErr::new::<PyNotImplementedError, _>(
+            "choose_action must be implemented by subclasses",
+        ))
+    }
+}
+
+/// Internal wrapper that implements the Rust Player trait for Python GamePlayer instances
+pub struct PlayerPy(pub Py<GamePlayerPy>);
+
+impl Player for PlayerPy {
     fn choose_action(
         &mut self,
         state: ObservableGameState,
@@ -30,16 +58,15 @@ impl Player for PyPlayer {
             .collect();
 
         let res = Python::with_gil(|py| {
-            let action = (*self)
-                .0
-                .call_method(
-                    py,
-                    "choose_action",
-                    (state_py, actions_py, history_py),
-                    None,
-                )
+            let history_list = PyList::empty(py);
+            for item in history_py {
+                history_list.append(item.into_py(py)).unwrap();
+            }
+            let player_any: &PyAny = self.0.as_ref(py);
+            let action = player_any
+                .call_method1("choose_action", (state_py, actions_py, history_list))
                 .unwrap();
-            action.extract::<u8>(py).unwrap()
+            action.extract::<u8>().unwrap()
         });
         actions.0[res as usize]
     }

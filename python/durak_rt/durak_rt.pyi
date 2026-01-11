@@ -1,8 +1,7 @@
 """
-This file is a wrapper around the raw output from py03 to add type hints
+This file is a wrapper around the raw output from py03 to add type hints 
 and whatnot to the classes
 """
-
 from typing import List, Tuple
 import numpy as np
 
@@ -60,7 +59,7 @@ class ObservableGameState:
     def __repr__(self) -> str:
         """Returns a string representation of the game state"""
         ...
-
+    
     def __str__(self) -> str:
         """Returns a string representation of the game state"""
         ...
@@ -70,8 +69,7 @@ class ObservableGameState:
         ...
 
 class ActionList:
-
-    @property
+  
     def actions(self) -> List[str]:
         """Returns the actions as a list of strings"""
         ...
@@ -87,53 +85,47 @@ class ActionList:
     def __len__(self) -> int:
         """Returns the number of actions"""
         ...
-
+    
     def __repr__(self) -> str: ...
     def __str__(self) -> str: ...
     def __getitem__(self, index: int) -> str: ...
 
+
 class GamePlayer:
     """Base class for game players. Subclasses must implement choose_action."""
-
     def __init__(self) -> None:
         """Initialize the game player."""
         ...
-
-    def choose_action(
-        self,
-        state: ObservableGameState,
-        actions: ActionList,
-        history: List[ObservableGameState],
-    ) -> int:
+    
+    def choose_action(self, state: ObservableGameState, actions: ActionList, history: List[ObservableGameState]) -> int:
         """
         Choose an action given the current game state and available actions.
-
+        
         This method must be implemented by subclasses.
-
+        
         Args:
             state: The current observable game state
             actions: The list of available actions
             history: The history of observable game states
-
+            
         Returns:
             The index of the chosen action in the actions list
         """
         ...
 
+
 class GameEnv:
-    
-    def __init__(self, player: GamePlayer): 
-        """Play against a random player"""
+    def play(self) -> Tuple[float, float]:
         ...
-
-    def play(self) -> Tuple[float, float]: ...
-
+    
     @staticmethod
-    def state_shape() -> np._AnyShapeT:
+    def state_shape() -> np.shape:
         """Returns the shape of the game state as a numpy array"""
         ...
-
+    
     @staticmethod
     def num_actions() -> int:
         """Returns the number of possible actions"""
         ...
+
+
