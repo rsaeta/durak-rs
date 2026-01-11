@@ -1,36 +1,29 @@
-from durak_rt import GameEnv, GamePlayer
-import numpy as np
+"""
+Example script demonstrating basic usage of the Durak game environment.
+
+This is a simple example - see examples.py for more comprehensive examples.
+"""
+
+from durak_rt import GameEnv
+from durak_rt.examples import RandomPlayer
 
 
-class RandomPlayer(GamePlayer):
-    def __init__(self):
-        self.np_random = np.random.RandomState()
+def main():
+    """Run a simple game example."""
+    # Create a random player
+    player = RandomPlayer(seed=42)
 
-    def choose_action(self, state, actions, history=None):
-        print(f"Actions: {actions}")
-        print(f"State: {state}")
-        choice = self.np_random.choice(len(actions.actions))
-        print(f"Chose action: {actions[choice]}")
-        return choice
+    # Create game environment (player2 will be random by default)
+    env = GameEnv(player)
 
+    # Play a full game
+    print("Playing a game...")
+    rewards = env.play()
 
-class HumanPlayer(GamePlayer):
-    def choose_action(self, state, actions, history=None):
-        print("State:")
-        print(state)
-        sorted_actions = sorted(actions.actions)
-        print("Actions: {}".format(sorted_actions))
-        action = -1
-        while action not in range(len(actions)):
-            try:
-                action = int(input("Choose action: "))
-            except ValueError:
-                action = -1
-            if action not in range(len(actions)):
-                print("Invalid action {}".format(action))
-        return actions.actions.index(sorted_actions[action])
+    print(f"\nGame finished!")
+    print(f"Player 1 reward: {rewards[0]}")
+    print(f"Player 2 reward: {rewards[1]}")
 
 
-env = GameEnv(RandomPlayer())
-(a, b) = env.play()
-breakpoint()
+if __name__ == "__main__":
+    main()
