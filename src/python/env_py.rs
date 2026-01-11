@@ -2,13 +2,13 @@ use crate::game::actions::num_actions;
 use crate::game::game::{Game, GameLogic};
 use crate::game::gamestate::GamePlayer;
 use crate::game::player::{Player, RandomPlayer};
-use crate::python::player_py::PyPlayer;
-use pyo3::{pyclass, pymethods, Py, PyAny, PyResult};
+use crate::python::player_py::PlayerPy;
+use pyo3::{pyclass, pymethods, Py, PyResult};
 
 #[pyclass(name = "GameEnv", unsendable)]
 pub struct GameEnvPy {
     game: Box<Game>,
-    player1: Box<PyPlayer>,
+    player1: Box<PlayerPy>,
 }
 
 impl Into<GamePlayer> for u8 {
@@ -24,10 +24,10 @@ impl Into<GamePlayer> for u8 {
 #[pymethods]
 impl GameEnvPy {
     #[new]
-    pub fn new(player1: Py<PyAny>) -> Self {
+    pub fn new(player1: Py<crate::python::player_py::GamePlayerPy>) -> Self {
         GameEnvPy {
             game: Box::new(Game::new()),
-            player1: Box::new(PyPlayer(player1)),
+            player1: Box::new(PlayerPy(player1)),
         }
     }
 

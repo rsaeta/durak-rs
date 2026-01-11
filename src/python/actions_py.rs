@@ -11,12 +11,6 @@ impl ActionPy {
     #[getter]
     fn get_action(&self) -> PyResult<String> {
         Ok(format!("{:?}", self.0))
-        // match self.0 {
-        //     Action::StopAttack => Ok(String::from("StopAttack")),
-        //     Action::Take => Ok(String::from("Take")),
-        //     Action::Attack(card) => Ok(format!("Attack({:?})", card)),
-        //     Action::Defend(card) => Ok(format!("Defend({:?})", card)),
-        // }
     }
 
     fn to_index(&self) -> PyResult<u8> {
