@@ -4,9 +4,8 @@ Example script demonstrating basic usage of the Durak game environment.
 This is a simple example - see examples.py for more comprehensive examples.
 """
 
-from durak_rt import GameEnv, GamePlayer
+from durak_rt import GameEnv
 from durak_rt.examples import RandomPlayer
-import numpy as np
 
 
 def main():

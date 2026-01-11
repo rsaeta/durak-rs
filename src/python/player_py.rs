@@ -19,9 +19,16 @@ pub struct GamePlayerPy;
 
 #[pymethods]
 impl GamePlayerPy {
+    /// Create a new GamePlayer instance.
+    ///
+    /// This constructor accepts *args and **kwargs to allow Python subclasses
+    /// to pass arguments to their __init__ methods. The arguments are ignored
+    /// by this base class.
     #[new]
-    fn new() -> Self {
-        Self
+    #[pyo3(signature = (*_args, **_kwargs))]
+    fn new(_args: &PyAny, _kwargs: Option<&PyAny>) -> PyResult<Self> {
+        // Ignore args and kwargs - they're for subclasses to use
+        Ok(Self {})
     }
 
     /// Choose an action given the current game state and available actions.
