@@ -7,6 +7,8 @@ use std::{
     vec,
 };
 
+use crate::game::gamestate::ObservableGameHistory;
+
 use super::{
     actions::{Action, ActionList},
     cards::{Card, Deck, Hand, Suit},
@@ -368,7 +370,8 @@ impl Game {
                 GamePlayer::Player1 => &mut player1,
                 GamePlayer::Player2 => &mut player2,
             };
-            let history = self.history.iter().map(|x| x.observe(pta)).collect();
+            let history =
+                ObservableGameHistory(self.history.iter().map(|x| x.observe(pta)).collect());
             let action =
                 player
                     .as_mut()
@@ -467,7 +470,7 @@ pub fn _run_game() -> (f32, f32) {
             GamePlayer::Player1 => p1.as_mut(),
             GamePlayer::Player2 => p2.as_mut(),
         };
-        let history = game.history.iter().map(|x| x.observe(pta)).collect();
+        let history = ObservableGameHistory(game.history.iter().map(|x| x.observe(pta)).collect());
         let action = player.choose_action(game.game_state.observe(pta), actions, history);
         'step_loop: loop {
             match game.step(action) {

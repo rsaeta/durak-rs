@@ -1,5 +1,7 @@
 use rand::{thread_rng, Rng, RngCore};
 
+use crate::game::gamestate::ObservableGameHistory;
+
 use super::{
     actions::{Action, ActionList},
     gamestate::ObservableGameState,
@@ -10,7 +12,7 @@ pub trait Player {
         &mut self,
         game_state: ObservableGameState,
         actions: ActionList,
-        history: Vec<ObservableGameState>,
+        history: ObservableGameHistory,
     ) -> Action;
 }
 
@@ -34,7 +36,7 @@ impl Player for RandomPlayer {
         &mut self,
         _state: ObservableGameState,
         actions: ActionList,
-        _history: Vec<ObservableGameState>,
+        _history: ObservableGameHistory,
     ) -> Action {
         let choice = match actions.0.len() {
             0 => panic!("No actions available"),

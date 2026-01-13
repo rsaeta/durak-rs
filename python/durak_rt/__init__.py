@@ -19,7 +19,21 @@ Example:
     ```
 """
 
-from .rust import GameEnv, GamePlayer, ObservableGameState, ActionList, Card
+from .rust import (
+    GameEnv,
+    GamePlayer,
+    ObservableGameState,
+    ActionList,
+    Card,
+    ObservableGameHistory,
+)
 
 __version__ = "0.1.0"
-__all__ = ["GameEnv", "GamePlayer", "ObservableGameState", "ActionList", "Card"]
+__all__ = [
+    "GameEnv",
+    "GamePlayer",
+    "ObservableGameState",
+    "ActionList",
+    "Card",
+    "ObservableGameHistory",
+]

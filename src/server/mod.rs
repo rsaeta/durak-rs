@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::game::actions::Action;
 use crate::game::game::{Game, GameLogic};
-use crate::game::gamestate::GamePlayer;
+use crate::game::gamestate::{GamePlayer, ObservableGameHistory};
 use crate::game::player::Player;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -82,7 +82,7 @@ impl GameSession {
             let action = player_instance.choose_action(
                 self.game.game_state.observe(current_player),
                 actions,
-                history,
+                ObservableGameHistory(history),
             );
 
             // Use GameLogic::step instead of direct step call

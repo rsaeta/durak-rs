@@ -1,16 +1,41 @@
 use numpy::PyArray1;
-use numpy::{Ix1, PyArray};
+use numpy::{Ix1, Ix2, PyArray, PyArray2};
 use pyo3::exceptions::PyException;
 use pyo3::{pyclass, pymethods, PyErr, PyResult, Python};
 
 use crate::game::cards::Card;
-use crate::game::gamestate::{GamePlayer, GameState, ObservableGameState};
+use crate::game::gamestate::{GamePlayer, GameState, ObservableGameHistory, ObservableGameState};
 
 use super::card_py::CardPy;
 
 #[pyclass(name = "ObservableGameState")]
 pub struct ObservableGameStatePy {
     pub game_state: ObservableGameState,
+}
+
+#[pyclass(name="ObservableGameHistory")]
+pub struct ObservableGameHistoryPy {
+    pub history: ObservableGameHistory,
+}
+
+#[pymethods]
+impl ObservableGameHistoryPy {
+  pub fn __repr__(&self) -> PyResult<String> {
+    Ok(format!("ObservableGameHistory: {:?}", self.history))
+  }
+
+  pub fn __str__(&self) -> PyResult<String> {
+    Ok(format!("ObservableGameHistory: {:?}", self.history))
+  }
+
+  pub fn to_numpy(&self) -> PyResult<pyo3::Py<PyArray<u8, Ix2>>> {
+    match self.history.clone().to_numpy() {
+      Ok(array) => Ok(Python::with_gil(|py| {
+        PyArray2::from_array(py, &array).to_owned()
+      })),
+      Err(e) => Err(PyErr::new::<PyException, _>(e))
+    }
+  }
 }
 
 #[pyclass(name = "GameState")]

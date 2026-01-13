@@ -4,9 +4,10 @@ use pyo3::{pyclass, pymethods, IntoPy, PyErr, PyResult};
 use crate::{
     game::{
         actions::{Action, ActionList},
-        gamestate::ObservableGameState,
+        gamestate::{ObservableGameHistory, ObservableGameState},
         player::Player,
     },
+    python::gamestate_py::ObservableGameHistoryPy,
     ObservableGameStatePy,
 };
 
@@ -37,7 +38,7 @@ impl GamePlayerPy {
         &self,
         _state: &ObservableGameStatePy,
         _actions: &ActionListPy,
-        _history: &PyList,
+        _history: &ObservableGameHistoryPy,
     ) -> PyResult<u8> {
         Err(PyErr::new::<PyNotImplementedError, _>(
             "choose_action must be implemented by subclasses",
@@ -53,27 +54,16 @@ impl Player for PlayerPy {
         &mut self,
         state: ObservableGameState,
         actions: ActionList,
-        history: Vec<ObservableGameState>,
+        history: ObservableGameHistory,
     ) -> Action {
         let state_py = ObservableGameStatePy { game_state: state };
         let actions_py = ActionListPy(actions.clone());
-        let history_py: Vec<ObservableGameStatePy> = history
-            .iter()
-            .map(|x| ObservableGameStatePy {
-                game_state: x.clone(),
-            })
-            .collect();
+        let history_py = ObservableGameHistoryPy { history };
 
         let res = Python::with_gil(|py| -> u8 {
-            let history_list = PyList::empty(py);
-            for item in history_py {
-                history_list
-                    .append(item.into_py(py))
-                    .expect("Failed to append history item to list");
-            }
             let player_any: &PyAny = self.0.as_ref(py);
             let action_result = player_any
-                .call_method1("choose_action", (state_py, actions_py, history_list))
+                .call_method1("choose_action", (state_py, actions_py, history_py))
                 .expect("Failed to call choose_action on Python player");
             action_result
                 .extract::<u8>()

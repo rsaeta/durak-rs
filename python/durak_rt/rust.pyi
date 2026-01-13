@@ -12,6 +12,13 @@ class Card:
     suit: int
     def __init__(self, rank: int, suit: int) -> None: ...
 
+class ObservableGameHistory:
+    history: List[ObservableGameState]
+    def __init__(self, history: List[ObservableGameState]) -> None: ...
+    def to_numpy(self) -> np.ndarray:
+        """Converts the game history to a numpy array of shape (num_states, state_size)"""
+        ...
+
 class ObservableGameState:
     @property
     def acting_player(self) -> int:
@@ -103,7 +110,7 @@ class GamePlayer:
         self,
         state: ObservableGameState,
         actions: ActionList,
-        history: List[ObservableGameState],
+        history: ObservableGameHistory,
     ) -> int:
         """
         Choose an action given the current game state and available actions.
