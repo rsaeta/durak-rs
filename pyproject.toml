@@ -15,6 +15,6 @@ dependencies = [
 ]
 
 [tool.maturin]
-features = ["pyo3/extension-module"]
+features = ["python", "pyo3/extension-module"]
 python-source = "python"
 module-name = "durak_rt.rust"

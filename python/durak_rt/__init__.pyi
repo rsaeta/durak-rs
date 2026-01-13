@@ -6,6 +6,14 @@ from .rust import (
     ObservableGameState,
     ActionList,
     Card,
+    ObservableGameHistory,
 )
 
-__all__ = ["GameEnv", "GamePlayer", "ObservableGameState", "ActionList", "Card"]
+__all__ = [
+    "GameEnv",
+    "GamePlayer",
+    "ObservableGameState",
+    "ActionList",
+    "Card",
+    "ObservableGameHistory",
+]

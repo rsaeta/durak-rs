@@ -1,4 +1,4 @@
-use numpy::ndarray::Array1;
+use ndarray::Array1;
 use pyo3::{pyclass, pymethods, PyResult};
 
 use crate::game::cards::{Card, Hand};

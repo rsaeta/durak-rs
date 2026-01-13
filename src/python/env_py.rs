@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::game::actions::num_actions;
 use crate::game::game::{Game, GameLogic};
-use crate::game::gamestate::GamePlayer;
+use crate::game::gamestate::{GamePlayer, ObservableGameHistory};
 use crate::game::player::{Player, RandomPlayer};
 use crate::python::player_py::PlayerPy;
 use pyo3::exceptions::{PyIndexError, PyValueError};
@@ -238,7 +238,8 @@ impl GameEnvPy {
         while !game_over {
             let pta = self.game.game_state.acting_player;
             let actions = self.game.legal_actions();
-            let history = self.game.history.iter().map(|x| x.observe(pta)).collect();
+            let history =
+                ObservableGameHistory(self.game.history.iter().map(|x| x.observe(pta)).collect());
 
             let action = match pta {
                 GamePlayer::Player1 => {

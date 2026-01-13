@@ -5,7 +5,13 @@ This module provides several example player implementations that can be used
 as starting points for developing AI players.
 """
 
-from durak_rt import GameEnv, GamePlayer, ObservableGameState, ActionList
+from durak_rt import (
+    GameEnv,
+    GamePlayer,
+    ObservableGameState,
+    ActionList,
+    ObservableGameHistory,
+)
 import numpy as np
 from typing import List, Optional
 
@@ -25,7 +31,7 @@ class RandomPlayer(GamePlayer):
         self,
         state: ObservableGameState,
         actions: ActionList,
-        history: Optional[List[ObservableGameState]] = None,
+        history: ObservableGameHistory = None,
     ) -> int:
         """Choose a random action from the available actions.
 
@@ -39,6 +45,7 @@ class RandomPlayer(GamePlayer):
         """
         if len(actions) == 0:
             raise ValueError("No actions available")
+        breakpoint()
         return self.np_random.randint(len(actions))
 
 

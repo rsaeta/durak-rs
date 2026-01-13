@@ -5,7 +5,7 @@ use super::{
     cards::{Card, Deck, Hand},
     utils::indices_to_bitmap_as_array1,
 };
-use numpy::ndarray::{concatenate, Array1, Axis};
+use ndarray::{concatenate, Array1, Array2};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, PartialEq, Copy, Debug, Serialize, Deserialize)]
@@ -32,7 +32,7 @@ impl ops::Not for GamePlayer {
 }
 
 // ignore unused variable for now
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ObservableGameState {
     pub player: GamePlayer,
     pub num_cards_in_deck: u8,
@@ -62,7 +62,7 @@ impl ObservableGameState {
         let deck_size_arr = Array1::from_vec(vec![self.num_cards_in_deck]);
         let cards_in_opp_arr = Array1::from_vec(vec![self.cards_in_opponent]);
         let cat = concatenate(
-            numpy::ndarray::Axis(0),
+            ndarray::Axis(0),
             &[
                 player_acting_arr.view(),
                 hand_arr.view(),
@@ -78,6 +78,34 @@ impl ObservableGameState {
         match cat {
             Ok(a) => Ok(a as Array1<u8>),
             Err(_e) => Err(String::from("Shape Error")),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ObservableGameHistory(pub Vec<ObservableGameState>);
+
+impl ObservableGameHistory {
+    pub fn to_numpy(self) -> Result<Array2<u8>, String> {
+        let states = self
+            .0
+            .iter()
+            .map(|state| state.clone().to_numpy().unwrap())
+            .collect::<Vec<_>>();
+        // Stack all state arrays vertically into a 2d array (each state is a row)
+        match concatenate(
+            ndarray::Axis(0),
+            &states.iter().map(|state| state.view()).collect::<Vec<_>>(),
+        ) {
+            Ok(numpy_array) => {
+                // Reshape the 1D concatenated array into 2D: (num_states, state_size)
+                let num_states = states.len();
+                let state_size = if num_states > 0 { states[0].len() } else { 0 };
+                numpy_array
+                    .into_shape((num_states, state_size))
+                    .map_err(|_| String::from("Shape Error"))
+            }
+            Err(_) => Err(String::from("Shape Error")),
         }
     }
 }
@@ -164,7 +192,7 @@ impl GameState {
         ); // 36 bits
            // we expect a shape of 257 bits
         let cat = concatenate(
-            numpy::ndarray::Axis(0),
+            ndarray::Axis(0),
             &[
                 deck_arr.view(),
                 attack_table_arr.view(),
